@@ -1,15 +1,3 @@
-/***************************************************************************
- *
- * Copyright (c) 2017 Baidu.com, Inc. All Rights Reserved
- * @author duanbing(duanbing@baidu.com)
- *
- **************************************************************************/
-
-/**
- * @filename main.go
- * @desc
- * @create time 2018-04-19 15:49:26
-**/
 package main
 
 import (
@@ -20,22 +8,25 @@ import (
 	"os"
 	"time"
 
-	ec "github.com/xujingshi/go-evm/core"
-	"github.com/xujingshi/go-evm/vm"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/consensus"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethdb"
 	"github.com/ethereum/go-ethereum/params"
+	ec "github.com/xujingshi/go-evm/core"
+	"github.com/xujingshi/go-evm/state"
+	"github.com/xujingshi/go-evm/vm"
 )
 
 var (
-	testHash    = common.StringToHash("xujingshi")
-	fromAddress = common.StringToAddress("xujingshi")
-	toAddress   = common.StringToAddress("andone")
+	testHash    = common.BytesToHash([]byte("xujingshi"))
+	fromAddress = common.BytesToAddress([]byte("xujingshi"))
+	toAddress   = common.BytesToAddress([]byte("andone"))
 	amount      = big.NewInt(0)
 	nonce       = uint64(0)
-	gasLimit    = big.NewInt(100000)
+	gasLimit    = uint64(100000)
 	coinbase    = fromAddress
 )
 
@@ -64,50 +55,58 @@ func main() {
 	binFileName := "./coin_sol_Coin.bin"
 	data := loadBin(binFileName)
 
+	// init db
 	msg := ec.NewMessage(fromAddress, &toAddress, nonce, amount, gasLimit, big.NewInt(0), data, false)
 	cc := ChainContext{}
-	ctx := ec.NewEVMContext(msg, cc.GetHeader(testHash, 0), cc, &fromAddress)
-	dataPath := "/tmp/a.txt"
+	ctx := ec.NewEVMContext(msg, cc.GetHeader(testHash, 7280001), cc, &fromAddress)
+	dataPath := "/Users/mac/development/src/github.com/xujingshi/go-evm/test/data"
 	os.Remove(dataPath)
 	mdb, err := ethdb.NewLDBDatabase(dataPath, 100, 100)
 	must(err)
-	db := state.NewDatabase(mdb)
 
+	// FIXME: whats the diff from db and statedb?
+	db := state.NewDatabase(mdb)
 	root := common.Hash{}
 	statedb, err := state.New(root, db)
 	must(err)
+
 	//set balance
 	statedb.GetOrNewStateObject(fromAddress)
 	statedb.GetOrNewStateObject(toAddress)
 	statedb.AddBalance(fromAddress, big.NewInt(1e18))
-	testBalance := statedb.GetBalance(fromAddress)
-	fmt.Println("init testBalance =", testBalance)
+	fmt.Println("init testBalance =", statedb.GetBalance(fromAddress))
 	must(err)
 
-	//	config := params.TestnetChainConfig
+	// log config
 	config := params.MainnetChainConfig
 	logConfig := vm.LogConfig{}
+	// common.Address => Storage
 	structLogger := vm.NewStructLogger(&logConfig)
 	vmConfig := vm.Config{Debug: true, Tracer: structLogger /*, JumpTable: vm.NewByzantiumInstructionSet()*/}
 
+	// load evm
 	evm := vm.NewEVM(ctx, statedb, config, vmConfig)
+	// caller
 	contractRef := vm.AccountRef(fromAddress)
 	contractCode, contractAddr, gasLeftover, vmerr := evm.Create(contractRef, data, statedb.GetBalance(fromAddress).Uint64(), big.NewInt(0))
 	must(vmerr)
 	//fmt.Printf("getcode:%x\n%x\n", contractCode, statedb.GetCode(contractAddr))
 
+	// FIXME: ?????
 	statedb.SetBalance(fromAddress, big.NewInt(0).SetUint64(gasLeftover))
-	testBalance = statedb.GetBalance(fromAddress)
-	fmt.Println("after create contract, testBalance =", testBalance)
+	fmt.Println("after create contract, testBalance =", statedb.GetBalance(fromAddress))
+
 	abiObj := loadAbi(abiFileName)
 
+	// method_id(4B) + args0(32B) + args1(32B) + ...
 	input, err := abiObj.Pack("minter")
 	must(err)
+	// 调用minter()获取矿工地址
 	outputs, gasLeftover, vmerr := evm.Call(contractRef, contractAddr, input, statedb.GetBalance(fromAddress).Uint64(), big.NewInt(0))
 	must(vmerr)
 
-	//fmt.Printf("minter is %x\n", common.BytesToAddress(outputs))
-	//fmt.Printf("call address %x\n", contractRef)
+	// fmt.Printf("minter is %x\n", common.BytesToAddress(outputs))
+	// fmt.Printf("call address %x\n", contractRef)
 
 	sender := common.BytesToAddress(outputs)
 
@@ -118,38 +117,42 @@ func main() {
 
 	senderAcc := vm.AccountRef(sender)
 
+	// mint
 	input, err = abiObj.Pack("mint", sender, big.NewInt(1000000))
 	must(err)
 	outputs, gasLeftover, vmerr = evm.Call(senderAcc, contractAddr, input, statedb.GetBalance(fromAddress).Uint64(), big.NewInt(0))
 	must(vmerr)
-
 	statedb.SetBalance(fromAddress, big.NewInt(0).SetUint64(gasLeftover))
-	testBalance = evm.StateDB.GetBalance(fromAddress)
+	fmt.Println("after mint, testBalance =", gasLeftover)
 
+	//send
 	input, err = abiObj.Pack("send", toAddress, big.NewInt(11))
 	outputs, gasLeftover, vmerr = evm.Call(senderAcc, contractAddr, input, statedb.GetBalance(fromAddress).Uint64(), big.NewInt(0))
 	must(vmerr)
+	fmt.Println("after send 11, testBalance =", gasLeftover)
 
 	//send
 	input, err = abiObj.Pack("send", toAddress, big.NewInt(19))
 	must(err)
 	outputs, gasLeftover, vmerr = evm.Call(senderAcc, contractAddr, input, statedb.GetBalance(fromAddress).Uint64(), big.NewInt(0))
 	must(vmerr)
+	fmt.Println("after send 19, testBalance =", gasLeftover)
 
-	fmt.Printf("toAddress %x\n", toAddress)
-	// get balance
+	// get receiver balance
 	input, err = abiObj.Pack("balances", toAddress)
 	must(err)
 	outputs, gasLeftover, vmerr = evm.Call(contractRef, contractAddr, input, statedb.GetBalance(fromAddress).Uint64(), big.NewInt(0))
 	must(vmerr)
 	Print(outputs, "balances")
+	fmt.Println("after get receiver balance, testBalance =", gasLeftover)
 
-	// get balance
+	// get sender balance
 	input, err = abiObj.Pack("balances", sender)
 	must(err)
 	outputs, gasLeftover, vmerr = evm.Call(contractRef, contractAddr, input, statedb.GetBalance(fromAddress).Uint64(), big.NewInt(0))
 	must(vmerr)
 	Print(outputs, "balances")
+	fmt.Println("after get sender balance, testBalance =", gasLeftover)
 
 	// get event
 	logs := statedb.Logs()
@@ -176,8 +179,7 @@ func main() {
 	db2 := state.NewDatabase(mdb2)
 	statedb2, err := state.New(root, db2)
 	must(err)
-	testBalance = statedb2.GetBalance(fromAddress)
-	fmt.Println("get testBalance =", testBalance)
+	fmt.Println("get testBalance =", statedb2.GetBalance(fromAddress))
 	if !bytes.Equal(contractCode, statedb2.GetCode(contractAddr)) {
 		fmt.Println("BUG!,the code was changed!")
 		os.Exit(-1)
@@ -201,6 +203,7 @@ func Print(outputs []byte, name string) {
 
 type ChainContext struct{}
 
+// get block header
 func (cc ChainContext) GetHeader(hash common.Hash, number uint64) *types.Header {
 
 	return &types.Header{
@@ -210,9 +213,9 @@ func (cc ChainContext) GetHeader(hash common.Hash, number uint64) *types.Header 
 		//	Root:        common.Hash{},
 		//	TxHash:      common.Hash{},
 		//	ReceiptHash: common.Hash{},
-		//	Bloom:      types.BytesToBloom([]byte("duanbing")),
+		//	Bloom:      types.BytesToBloom([]byte("xujingshi")),
 		Difficulty: big.NewInt(1),
-		Number:     big.NewInt(1),
+		Number:     big.NewInt(1).SetUint64(number),
 		GasLimit:   1000000,
 		GasUsed:    0,
 		Time:       big.NewInt(time.Now().Unix()),
@@ -220,4 +223,8 @@ func (cc ChainContext) GetHeader(hash common.Hash, number uint64) *types.Header 
 		//MixDigest:  testHash,
 		//Nonce:      types.EncodeNonce(1),
 	}
+}
+
+func (cc ChainContext) Engine() consensus.Engine {
+	return nil
 }
