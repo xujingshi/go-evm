@@ -19,9 +19,9 @@ package core
 import (
 	"math/big"
 
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/consensus"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/xujingshi/go-evm/common"
 	"github.com/xujingshi/go-evm/vm"
 )
 
@@ -40,7 +40,9 @@ func NewEVMContext(msg Message, header *types.Header, chain ChainContext, author
 	// If we don't have an explicit author (i.e. not mining), extract from the header
 	var beneficiary common.Address
 	if author == nil {
-		beneficiary, _ = chain.Engine().Author(header) // Ignore error, we're past header validation
+		// FIXME:
+		beneficiary2, _ := chain.Engine().Author(header) // Ignore error, we're past header validation
+		beneficiary = common.Address(beneficiary2)
 	} else {
 		beneficiary = *author
 	}
@@ -66,7 +68,9 @@ func GetHashFn(ref *types.Header, chain ChainContext) func(n uint64) common.Hash
 		// If there's no hash cache yet, make one
 		if cache == nil {
 			cache = map[uint64]common.Hash{
-				ref.Number.Uint64() - 1: ref.ParentHash,
+				//FIXME:
+				// ref.Number.Uint64() - 1: ref.ParentHash,
+				ref.Number.Uint64() - 1: common.Hash(ref.ParentHash),
 			}
 		}
 		// Try to fulfill the request from the cache
@@ -74,10 +78,17 @@ func GetHashFn(ref *types.Header, chain ChainContext) func(n uint64) common.Hash
 			return hash
 		}
 		// Not cached, iterate the blocks and cache the hashes
-		for header := chain.GetHeader(ref.ParentHash, ref.Number.Uint64()-1); header != nil; header = chain.GetHeader(header.ParentHash, header.Number.Uint64()-1) {
-			cache[header.Number.Uint64()-1] = header.ParentHash
+		// FIXME:
+		// for header := chain.GetHeader(ref.ParentHash, ref.Number.Uint64()-1); header != nil; header = chain.GetHeader(header.ParentHash, header.Number.Uint64()-1) {
+		// 	cache[header.Number.Uint64()-1] = header.ParentHash
+		// 	if n == header.Number.Uint64()-1 {
+		// 		return header.ParentHash
+		// 	}
+		// }
+		for header := chain.GetHeader(common.Hash(ref.ParentHash), ref.Number.Uint64()-1); header != nil; header = chain.GetHeader(common.Hash(header.ParentHash), header.Number.Uint64()-1) {
+			cache[header.Number.Uint64()-1] = common.Hash(header.ParentHash)
 			if n == header.Number.Uint64()-1 {
-				return header.ParentHash
+				return common.Hash(header.ParentHash)
 			}
 		}
 		return common.Hash{}

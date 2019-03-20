@@ -21,10 +21,11 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ethereum/go-ethereum/common"
+	common2 "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/math"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
+	"github.com/xujingshi/go-evm/common"
 	"golang.org/x/crypto/sha3"
 )
 
@@ -891,17 +892,23 @@ func opSuicide(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memo
 // make log instruction function
 func makeLog(size int) executionFunc {
 	return func(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error) {
-		topics := make([]common.Hash, size)
+		//FIXME:
+		// topics := make([]common.Hash, size)
+		topics := make([]common2.Hash, size)
 		mStart, mSize := stack.pop(), stack.pop()
 		for i := 0; i < size; i++ {
-			topics[i] = common.BigToHash(stack.pop())
+			//FIXME:
+			// topics[i] = common.BigToHash(stack.pop())
+			topics[i] = common2.Hash(common.BigToHash(stack.pop()))
 		}
 
 		d := memory.Get(mStart.Int64(), mSize.Int64())
 		interpreter.evm.StateDB.AddLog(&types.Log{
-			Address: contract.Address(),
+			//FIXME:
+			Address: common2.Address(contract.Address()),
 			Topics:  topics,
-			Data:    d,
+			// Address: contract.Address(),
+			Data: d,
 			// This is a non-consensus field, but assigned here because
 			// core/state doesn't know the current block number.
 			BlockNumber: interpreter.evm.BlockNumber.Uint64(),

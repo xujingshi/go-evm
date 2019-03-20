@@ -19,7 +19,7 @@ package core
 import (
 	"math/big"
 
-	"github.com/ethereum/go-ethereum/common"
+	"github.com/xujingshi/go-evm/common"
 )
 
 // Message is a fully derived transaction and implements core.Message

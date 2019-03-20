@@ -20,10 +20,10 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethdb"
-	"github.com/ethereum/go-ethereum/trie"
 	lru "github.com/hashicorp/golang-lru"
+	"github.com/xujingshi/go-evm/common"
+	"github.com/xujingshi/go-evm/trie"
 )
 
 // Trie cache generation limit after which to evict trie nodes from memory.
@@ -102,7 +102,10 @@ func (db *cachingDB) OpenTrie(root common.Hash) (Trie, error) {
 	defer db.mu.Unlock()
 
 	for i := len(db.pastTries) - 1; i >= 0; i-- {
-		if db.pastTries[i].Hash() == root {
+		//FIXME:
+		// if db.pastTries[i].Hash() == root {
+		// 	return cachedTrie{db.pastTries[i].Copy(), db}, nil
+		if common.Hash(db.pastTries[i].Hash()) == root {
 			return cachedTrie{db.pastTries[i].Copy(), db}, nil
 		}
 	}

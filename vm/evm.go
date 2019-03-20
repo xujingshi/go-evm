@@ -21,7 +21,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/ethereum/go-ethereum/common"
+	common2 "github.com/ethereum/go-ethereum/common"
+	"github.com/xujingshi/go-evm/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/params"
 )
@@ -365,7 +366,9 @@ type codeAndHash struct {
 
 func (c *codeAndHash) Hash() common.Hash {
 	if c.hash == (common.Hash{}) {
-		c.hash = crypto.Keccak256Hash(c.code)
+		// FIXME:
+		// c.hash = crypto.Keccak256Hash(c.code)
+		c.hash = common.Hash(crypto.Keccak256Hash(c.code))
 	}
 	return c.hash
 }
@@ -385,7 +388,9 @@ func (evm *EVM) create(caller ContractRef, codeAndHash *codeAndHash, gas uint64,
 
 	// Ensure there's no existing contract already at the designated address
 	contractHash := evm.StateDB.GetCodeHash(address)
-	if evm.StateDB.GetNonce(address) != 0 || (contractHash != (common.Hash{}) && contractHash != emptyCodeHash) {
+	// FIXME:
+	//if evm.StateDB.GetNonce(address) != 0 || (contractHash != (common.Hash{}) && contractHash != emptyCodeHash) {
+	if evm.StateDB.GetNonce(address) != 0 || (contractHash != (common.Hash{}) && contractHash != common.Hash(emptyCodeHash)) {
 		return nil, common.Address{}, 0, ErrContractAddressCollision
 	}
 	// Create a new account on the state
@@ -450,7 +455,10 @@ func (evm *EVM) create(caller ContractRef, codeAndHash *codeAndHash, gas uint64,
 
 // Create creates a new contract using code as deployment code.
 func (evm *EVM) Create(caller ContractRef, code []byte, gas uint64, value *big.Int) (ret []byte, contractAddr common.Address, leftOverGas uint64, err error) {
-	contractAddr = crypto.CreateAddress(caller.Address(), evm.StateDB.GetNonce(caller.Address()))
+	// FIXME:
+	//contractAddr = crypto.CreateAddress(caller.Address(), evm.StateDB.GetNonce(caller.Address()))
+	contractAddr = common.Address(crypto.CreateAddress(common2.Address(caller.Address()), evm.StateDB.GetNonce(caller.Address())))
+	
 	return evm.create(caller, &codeAndHash{code: code}, gas, value, contractAddr)
 }
 
@@ -460,7 +468,9 @@ func (evm *EVM) Create(caller ContractRef, code []byte, gas uint64, value *big.I
 // instead of the usual sender-and-nonce-hash as the address where the contract is initialized at.
 func (evm *EVM) Create2(caller ContractRef, code []byte, gas uint64, endowment *big.Int, salt *big.Int) (ret []byte, contractAddr common.Address, leftOverGas uint64, err error) {
 	codeAndHash := &codeAndHash{code: code}
-	contractAddr = crypto.CreateAddress2(caller.Address(), common.BigToHash(salt), codeAndHash.Hash().Bytes())
+	//FIXME:
+	// contractAddr = crypto.CreateAddress2(caller.Address(), common.BigToHash(salt), codeAndHash.Hash().Bytes())
+	contractAddr = common.Address(crypto.CreateAddress2(common2.Address(caller.Address()), common.BigToHash(salt), codeAndHash.Hash().Bytes()))
 	return evm.create(caller, codeAndHash, gas, endowment, contractAddr)
 }
 

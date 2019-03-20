@@ -21,10 +21,9 @@ import (
 	"hash"
 	"sync/atomic"
 
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/math"
 	"github.com/ethereum/go-ethereum/params"
-	// "github.com/xujingshi/go-evm/vm/common"
+	"github.com/xujingshi/go-evm/common"
 	// "github.com/xujingshi/go-evm/vm/common/math"
 	// "github.com/xujingshi/go-evm/vm/params"
 )

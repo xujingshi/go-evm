@@ -14,17 +14,22 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
 
-package common
+package trie
 
 import (
+	"fmt"
 
+	"github.com/ethereum/go-ethereum/common"
 )
 
-// Lengths of hashes and addresses in bytes.
-const (
-	// HashLength is the expected length of the hash
-	HashLength = 32
-)
+// MissingNodeError is returned by the trie functions (TryGet, TryUpdate, TryDelete)
+// in the case where a trie node is not present in the local database. It contains
+// information necessary for retrieving the missing node.
+type MissingNodeError struct {
+	NodeHash common.Hash // hash of the missing node
+	Path     []byte      // hex-encoded path to the missing node
+}
 
-// Hash represents the 32 byte Keccak256 hash of arbitrary data.
-type Hash [HashLength]byte
+func (err *MissingNodeError) Error() string {
+	return fmt.Sprintf("missing trie node %x (path %x)", err.NodeHash, err.Path)
+}
