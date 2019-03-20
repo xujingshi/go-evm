@@ -1,4 +1,4 @@
-package main
+package test
 
 import (
 	"bytes"
@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"math/big"
 	"os"
+	"testing"
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -50,7 +51,7 @@ func loadAbi(filename string) abi.ABI {
 	return abiObj
 }
 
-func main() {
+func TestEVM(t *testing.T) {
 	abiFileName := "./coin_sol_Coin.abi"
 	binFileName := "./coin_sol_Coin.bin"
 	data := loadBin(binFileName)
@@ -92,7 +93,6 @@ func main() {
 	must(vmerr)
 	//fmt.Printf("getcode:%x\n%x\n", contractCode, statedb.GetCode(contractAddr))
 
-	// FIXME: ?????
 	statedb.SetBalance(fromAddress, big.NewInt(0).SetUint64(gasLeftover))
 	fmt.Println("after create contract, testBalance =", statedb.GetBalance(fromAddress))
 
