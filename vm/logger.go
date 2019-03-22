@@ -25,7 +25,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/common/math"
-	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/xujingshi/go-evm/common/types"
 	"github.com/xujingshi/go-evm/common"
 )
 

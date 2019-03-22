@@ -1,12 +1,11 @@
 package state
 
 import (
-	"fmt"
 	"math"
 	"math/big"
 
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/xujingshi/go-evm/common"
+	"github.com/xujingshi/go-evm/common/types"
 )
 
 func NewMockdb() *Mockdb {

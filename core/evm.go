@@ -20,8 +20,8 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/consensus"
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/xujingshi/go-evm/common"
+	"github.com/xujingshi/go-evm/common/types"
 	"github.com/xujingshi/go-evm/vm"
 )
 
@@ -40,9 +40,7 @@ func NewEVMContext(msg Message, header *types.Header, chain ChainContext, author
 	// If we don't have an explicit author (i.e. not mining), extract from the header
 	var beneficiary common.Address
 	if author == nil {
-		// FIXME:
-		beneficiary2, _ := chain.Engine().Author(header) // Ignore error, we're past header validation
-		beneficiary = common.Address(beneficiary2)
+		beneficiary = header.Coinbase
 	} else {
 		beneficiary = *author
 	}

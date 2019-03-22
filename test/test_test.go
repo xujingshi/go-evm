@@ -10,12 +10,11 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
-	common2 "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/consensus"
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/xujingshi/go-evm/common"
+	"github.com/xujingshi/go-evm/common/types"
 	ec "github.com/xujingshi/go-evm/core"
 	"github.com/xujingshi/go-evm/state"
 	"github.com/xujingshi/go-evm/vm"
@@ -73,7 +72,7 @@ func (cc ChainContext) GetHeader(hash common.Hash, number uint64) *types.Header 
 	return &types.Header{
 		// ParentHash: common.Hash{},
 		// UncleHash:  common.Hash{},
-		Coinbase: common2.Address(fromAddress),
+		Coinbase: common.Address(fromAddress),
 		//	Root:        common.Hash{},
 		//	TxHash:      common.Hash{},
 		//	ReceiptHash: common.Hash{},
