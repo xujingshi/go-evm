@@ -1,6 +1,7 @@
 package state
 
 import (
+	"fmt"
 	"math"
 	"math/big"
 
@@ -12,12 +13,14 @@ func NewMockdb() *Mockdb {
 	return &Mockdb{
 		contracts: make(map[common.Address][]uint8, 100),
 		nonces:    make(map[common.Address]uint64, 100),
+		states:    make(map[common.Hash]common.Hash, 100),
 	}
 }
 
 type Mockdb struct {
 	contracts map[common.Address][]uint8
 	nonces    map[common.Address]uint64
+	states    map[common.Hash]common.Hash
 }
 
 func (self *Mockdb) CreateAccount(address common.Address) {
@@ -84,10 +87,17 @@ func (self *Mockdb) GetCommittedState(address common.Address, key common.Hash) c
 }
 
 func (self *Mockdb) GetState(address common.Address, key common.Hash) common.Hash {
-	return [common.HashLength]byte{}
+	newKey := []byte{}
+	newKey = append(newKey, address.Bytes()...)
+	newKey = append(newKey, key.Bytes()...)
+	return self.states[common.BytesToHash(newKey)]
 }
 
 func (self *Mockdb) SetState(address common.Address, key, value common.Hash) {
+	newKey := []byte{}
+	newKey = append(newKey, address.Bytes()...)
+	newKey = append(newKey, key.Bytes()...)
+	self.states[common.BytesToHash(newKey)] = value
 }
 
 func (self *Mockdb) Suicide(address common.Address) bool {

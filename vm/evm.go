@@ -17,15 +17,14 @@
 package vm
 
 import (
-	"fmt"
 	"math/big"
 	"sync/atomic"
 	"time"
 
 	common2 "github.com/ethereum/go-ethereum/common"
-	"github.com/xujingshi/go-evm/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/params"
+	"github.com/xujingshi/go-evm/common"
 )
 
 // emptyCodeHash is used by create to ensure deployment is disallowed to already
@@ -450,8 +449,6 @@ func (evm *EVM) create(caller ContractRef, codeAndHash *codeAndHash, gas uint64,
 	if evm.vmConfig.Debug && evm.depth == 0 {
 		evm.vmConfig.Tracer.CaptureEnd(ret, gas-contract.Gas, time.Since(start), err)
 	}
-	code := evm.StateDB.GetCode(address)
-	fmt.Println(code)
 	return ret, address, contract.Gas, err
 
 }
@@ -461,7 +458,7 @@ func (evm *EVM) Create(caller ContractRef, code []byte, gas uint64, value *big.I
 	// FIXME:
 	//contractAddr = crypto.CreateAddress(caller.Address(), evm.StateDB.GetNonce(caller.Address()))
 	contractAddr = common.Address(crypto.CreateAddress(common2.Address(caller.Address()), evm.StateDB.GetNonce(caller.Address())))
-	
+
 	return evm.create(caller, &codeAndHash{code: code}, gas, value, contractAddr)
 }
 
