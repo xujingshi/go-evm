@@ -175,8 +175,8 @@ func BigToAddress(b *big.Int) Address { return BytesToAddress(b.Bytes()) }
 // 	return len(s) == 2*AddressLength && isHex(s)
 // }
 
-// // Bytes gets the string representation of the underlying address.
-// func (a Address) Bytes() []byte { return a[:] }
+// Bytes gets the string representation of the underlying address.
+func (a Address) Bytes() []byte { return a[:] }
 
 // Big converts an address to a big integer.
 func (a Address) Big() *big.Int { return new(big.Int).SetBytes(a[:]) }
