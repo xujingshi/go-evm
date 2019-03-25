@@ -12,10 +12,9 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/consensus"
-	"github.com/ethereum/go-ethereum/params"
 	"github.com/xujingshi/go-evm/common"
 	"github.com/xujingshi/go-evm/common/types"
-	ec "github.com/xujingshi/go-evm/core"
+	"github.com/xujingshi/go-evm/core"
 	"github.com/xujingshi/go-evm/state"
 	"github.com/xujingshi/go-evm/vm"
 )
@@ -234,9 +233,9 @@ func TestEVMWithoutStorage(t *testing.T) {
 	data := loadBin(binFileName)
 
 	// init db
-	msg := ec.NewMessage(fromAddress, &toAddress, nonce, amount, gasLimit, big.NewInt(0), data, false)
+	msg := core.NewMessage(fromAddress, &toAddress, nonce, amount, gasLimit, big.NewInt(0), data, false)
 	cc := ChainContext{}
-	ctx := ec.NewEVMContext(msg, cc.GetHeader(testHash, 7280001), cc, &fromAddress)
+	ctx := core.NewEVMContext(msg, cc.GetHeader(testHash, 7280001), cc, &fromAddress)
 	dataPath := "/Users/mac/development/src/github.com/xujingshi/go-evm/test/data"
 	os.Remove(dataPath)
 
@@ -244,7 +243,7 @@ func TestEVMWithoutStorage(t *testing.T) {
 	fmt.Println("init balance =", balance)
 
 	// log config
-	config := params.MainnetChainConfig
+	config := types.MainnetChainConfig
 	logConfig := vm.LogConfig{}
 	// common.Address => Storage
 	structLogger := vm.NewStructLogger(&logConfig)

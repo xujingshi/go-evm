@@ -22,10 +22,8 @@ import (
 	"sync/atomic"
 
 	"github.com/ethereum/go-ethereum/common/math"
-	"github.com/ethereum/go-ethereum/params"
 	"github.com/xujingshi/go-evm/common"
-	// "github.com/xujingshi/go-evm/vm/common/math"
-	// "github.com/xujingshi/go-evm/vm/params"
+	"github.com/xujingshi/go-evm/common/types"
 )
 
 // Config are the configuration options for the Interpreter
@@ -84,7 +82,7 @@ type keccakState interface {
 type EVMInterpreter struct {
 	evm      *EVM
 	cfg      Config
-	gasTable params.GasTable
+	gasTable types.GasTable
 
 	intPool *intPool
 

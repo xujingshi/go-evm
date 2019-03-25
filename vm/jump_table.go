@@ -20,12 +20,12 @@ import (
 	"errors"
 	"math/big"
 
-	"github.com/ethereum/go-ethereum/params"
+	"github.com/xujingshi/go-evm/common/types"
 )
 
 type (
 	executionFunc       func(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error)
-	gasFunc             func(params.GasTable, *EVM, *Contract, *Stack, *Memory, uint64) (uint64, error) // last parameter is the requested memory size as a uint64
+	gasFunc             func(types.GasTable, *EVM, *Contract, *Stack, *Memory, uint64) (uint64, error) // last parameter is the requested memory size as a uint64
 	stackValidationFunc func(*Stack) error
 	memorySizeFunc      func(*Stack) *big.Int
 )
@@ -493,7 +493,7 @@ func newFrontierInstructionSet() [256]operation {
 		},
 		JUMPDEST: {
 			execute:       opJumpdest,
-			gasCost:       constGasFunc(params.JumpdestGas),
+			gasCost:       constGasFunc(types.JumpdestGas),
 			validateStack: makeStackFunc(0, 0),
 			valid:         true,
 		},
