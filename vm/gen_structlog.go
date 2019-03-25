@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"math/big"
 
-	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/xujingshi/go-evm/common/hexutil"
 	"github.com/xujingshi/go-evm/common"
 	"github.com/xujingshi/go-evm/common/math"
 )

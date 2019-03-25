@@ -23,7 +23,7 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/xujingshi/go-evm/common/hexutil"
 	"github.com/xujingshi/go-evm/common"
 	"github.com/xujingshi/go-evm/common/math"
 	"github.com/xujingshi/go-evm/common/types"
