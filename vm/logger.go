@@ -24,9 +24,9 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/ethereum/go-ethereum/common/math"
-	"github.com/xujingshi/go-evm/common/types"
 	"github.com/xujingshi/go-evm/common"
+	"github.com/xujingshi/go-evm/common/math"
+	"github.com/xujingshi/go-evm/common/types"
 )
 
 // Storage represents a contract's storage.

@@ -21,8 +21,8 @@ import (
 	"hash"
 	"sync/atomic"
 
-	"github.com/ethereum/go-ethereum/common/math"
 	"github.com/xujingshi/go-evm/common"
+	"github.com/xujingshi/go-evm/common/math"
 	"github.com/xujingshi/go-evm/common/types"
 )
 

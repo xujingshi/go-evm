@@ -20,9 +20,9 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/common"
+	"github.com/xujingshi/go-evm/common"
+	"github.com/xujingshi/go-evm/common/types"
 	"github.com/ethereum/go-ethereum/core/state"
-	"github.com/ethereum/go-ethereum/params"
 )
 
 type dummyContractRef struct {
@@ -50,7 +50,7 @@ func (*dummyStatedb) GetRefund() uint64 { return 1337 }
 
 func TestStoreCapture(t *testing.T) {
 	var (
-		env      = NewEVM(Context{}, &dummyStatedb{}, params.TestChainConfig, Config{})
+		env      = NewEVM(Context{}, &dummyStatedb{}, types.TestChainConfig, Config{})
 		logger   = NewStructLogger(nil)
 		mem      = NewMemory()
 		stack    = newstack()

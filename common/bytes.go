@@ -93,11 +93,11 @@ func Bytes2Hex(d []byte) string {
 	return hex.EncodeToString(d)
 }
 
-// // Hex2Bytes returns the bytes represented by the hexadecimal string str.
-// func Hex2Bytes(str string) []byte {
-// 	h, _ := hex.DecodeString(str)
-// 	return h
-// }
+// Hex2Bytes returns the bytes represented by the hexadecimal string str.
+func Hex2Bytes(str string) []byte {
+	h, _ := hex.DecodeString(str)
+	return h
+}
 
 // // Hex2BytesFixed returns bytes of a specified fixed length flen.
 // func Hex2BytesFixed(str string, flen int) []byte {

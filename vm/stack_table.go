@@ -19,7 +19,7 @@ package vm
 import (
 	"fmt"
 
-	"github.com/ethereum/go-ethereum/params"
+	"github.com/xujingshi/go-evm/common/types"
 )
 
 func makeStackFunc(pop, push int) stackValidationFunc {
@@ -28,8 +28,8 @@ func makeStackFunc(pop, push int) stackValidationFunc {
 			return err
 		}
 
-		if stack.len()+push-pop > int(params.StackLimit) {
-			return fmt.Errorf("stack limit reached %d (%d)", stack.len(), params.StackLimit)
+		if stack.len()+push-pop > int(types.StackLimit) {
+			return fmt.Errorf("stack limit reached %d (%d)", stack.len(), types.StackLimit)
 		}
 		return nil
 	}
