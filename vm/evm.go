@@ -21,11 +21,9 @@ import (
 	"sync/atomic"
 	"time"
 
-	common2 "github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/params"
 	"github.com/xujingshi/go-evm/common"
 	"github.com/xujingshi/go-evm/common/types"
+	"github.com/xujingshi/go-evm/crypto"
 )
 
 // emptyCodeHash is used by create to ensure deployment is disallowed to already
@@ -257,7 +255,7 @@ func (evm *EVM) CallCode(caller ContractRef, addr common.Address, input []byte, 
 	}
 
 	// Fail if we're trying to execute above the call depth limit
-	if evm.depth > int(params.CallCreateDepth) {
+	if evm.depth > int(types.CallCreateDepth) {
 		return nil, gas, ErrDepth
 	}
 	// Fail if we're trying to transfer more than the available balance
@@ -295,7 +293,7 @@ func (evm *EVM) DelegateCall(caller ContractRef, addr common.Address, input []by
 		return nil, gas, nil
 	}
 	// Fail if we're trying to execute above the call depth limit
-	if evm.depth > int(params.CallCreateDepth) {
+	if evm.depth > int(types.CallCreateDepth) {
 		return nil, gas, ErrDepth
 	}
 
@@ -327,7 +325,7 @@ func (evm *EVM) StaticCall(caller ContractRef, addr common.Address, input []byte
 		return nil, gas, nil
 	}
 	// Fail if we're trying to execute above the call depth limit
-	if evm.depth > int(params.CallCreateDepth) {
+	if evm.depth > int(types.CallCreateDepth) {
 		return nil, gas, ErrDepth
 	}
 
@@ -378,7 +376,7 @@ func (c *codeAndHash) Hash() common.Hash {
 func (evm *EVM) create(caller ContractRef, codeAndHash *codeAndHash, gas uint64, value *big.Int, address common.Address) ([]byte, common.Address, uint64, error) {
 	// Depth check execution. Fail if we're trying to execute above the
 	// limit.
-	if evm.depth > int(params.CallCreateDepth) {
+	if evm.depth > int(types.CallCreateDepth) {
 		return nil, common.Address{}, gas, ErrDepth
 	}
 	if !evm.CanTransfer(evm.StateDB, caller.Address(), value) {
@@ -420,13 +418,13 @@ func (evm *EVM) create(caller ContractRef, codeAndHash *codeAndHash, gas uint64,
 	ret, err := run(evm, contract, nil, false)
 
 	// check whether the max code size has been exceeded
-	maxCodeSizeExceeded := evm.ChainConfig().IsEIP158(evm.BlockNumber) && len(ret) > params.MaxCodeSize
+	maxCodeSizeExceeded := evm.ChainConfig().IsEIP158(evm.BlockNumber) && len(ret) > types.MaxCodeSize
 	// if the contract creation ran successfully and no errors were returned
 	// calculate the gas required to store the code. If the code could not
 	// be stored due to not enough gas set an error and let it be handled
 	// by the error checking condition below.
 	if err == nil && !maxCodeSizeExceeded {
-		createDataGas := uint64(len(ret)) * params.CreateDataGas
+		createDataGas := uint64(len(ret)) * types.CreateDataGas
 		if contract.UseGas(createDataGas) {
 			evm.StateDB.SetCode(address, ret)
 		} else {
@@ -456,9 +454,7 @@ func (evm *EVM) create(caller ContractRef, codeAndHash *codeAndHash, gas uint64,
 
 // Create creates a new contract using code as deployment code.
 func (evm *EVM) Create(caller ContractRef, code []byte, gas uint64, value *big.Int) (ret []byte, contractAddr common.Address, leftOverGas uint64, err error) {
-	// FIXME:
-	//contractAddr = crypto.CreateAddress(caller.Address(), evm.StateDB.GetNonce(caller.Address()))
-	contractAddr = common.Address(crypto.CreateAddress(common2.Address(caller.Address()), evm.StateDB.GetNonce(caller.Address())))
+	contractAddr = crypto.CreateAddress(caller.Address(), evm.StateDB.GetNonce(caller.Address()))
 
 	return evm.create(caller, &codeAndHash{code: code}, gas, value, contractAddr)
 }
@@ -469,9 +465,7 @@ func (evm *EVM) Create(caller ContractRef, code []byte, gas uint64, value *big.I
 // instead of the usual sender-and-nonce-hash as the address where the contract is initialized at.
 func (evm *EVM) Create2(caller ContractRef, code []byte, gas uint64, endowment *big.Int, salt *big.Int) (ret []byte, contractAddr common.Address, leftOverGas uint64, err error) {
 	codeAndHash := &codeAndHash{code: code}
-	//FIXME:
-	// contractAddr = crypto.CreateAddress2(caller.Address(), common.BigToHash(salt), codeAndHash.Hash().Bytes())
-	contractAddr = common.Address(crypto.CreateAddress2(common2.Address(caller.Address()), common.BigToHash(salt), codeAndHash.Hash().Bytes()))
+	contractAddr = crypto.CreateAddress2(caller.Address(), common.BigToHash(salt), codeAndHash.Hash().Bytes())
 	return evm.create(caller, codeAndHash, gas, endowment, contractAddr)
 }
 

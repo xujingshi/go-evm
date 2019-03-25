@@ -21,9 +21,8 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ethereum/go-ethereum/common/math"
-	"github.com/ethereum/go-ethereum/params"
 	"github.com/xujingshi/go-evm/common"
+	"github.com/xujingshi/go-evm/common/math"
 	"github.com/xujingshi/go-evm/common/types"
 	"golang.org/x/crypto/sha3"
 )
@@ -762,7 +761,7 @@ func opCall(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory 
 	args := memory.Get(inOffset.Int64(), inSize.Int64())
 
 	if value.Sign() != 0 {
-		gas += params.CallStipend
+		gas += types.CallStipend
 	}
 	ret, returnGas, err := interpreter.evm.Call(contract, toAddr, args, gas, value)
 	if err != nil {
@@ -791,7 +790,7 @@ func opCallCode(pc *uint64, interpreter *EVMInterpreter, contract *Contract, mem
 	args := memory.Get(inOffset.Int64(), inSize.Int64())
 
 	if value.Sign() != 0 {
-		gas += params.CallStipend
+		gas += types.CallStipend
 	}
 	ret, returnGas, err := interpreter.evm.CallCode(contract, toAddr, args, gas, value)
 	if err != nil {

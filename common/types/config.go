@@ -46,6 +46,8 @@ var (
 		ConstantinopleBlock: big.NewInt(4230000),
 		PetersburgBlock:     big.NewInt(4939394),
 	}
+
+	TestChainConfig = &ChainConfig{big.NewInt(1), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), nil}
 )
 
 // ChainConfig is the core config which determines the blockchain settings.

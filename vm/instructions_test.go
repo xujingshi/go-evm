@@ -21,9 +21,9 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/params"
+	"github.com/xujingshi/go-evm/common"
+	"github.com/xujingshi/go-evm/crypto"
+	"github.com/xujingshi/go-evm/common/types"
 )
 
 type twoOperandTest struct {
@@ -34,7 +34,7 @@ type twoOperandTest struct {
 
 func testTwoOperandOp(t *testing.T, tests []twoOperandTest, opFn func(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error)) {
 	var (
-		env            = NewEVM(Context{}, nil, params.TestChainConfig, Config{})
+		env            = NewEVM(Context{}, nil, types.TestChainConfig, Config{})
 		stack          = newstack()
 		pc             = uint64(0)
 		evmInterpreter = NewEVMInterpreter(env, env.vmConfig)
