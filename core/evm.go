@@ -19,7 +19,6 @@ package core
 import (
 	"math/big"
 
-	"github.com/ethereum/go-ethereum/consensus"
 	"github.com/xujingshi/go-evm/common"
 	"github.com/xujingshi/go-evm/common/types"
 	"github.com/xujingshi/go-evm/vm"
@@ -28,9 +27,6 @@ import (
 // ChainContext supports retrieving headers and consensus parameters from the
 // current blockchain to be used during transaction processing.
 type ChainContext interface {
-	// Engine retrieves the chain's consensus engine.
-	Engine() consensus.Engine
-
 	// GetHeader returns the hash corresponding to their hash.
 	GetHeader(common.Hash, uint64) *types.Header
 }

@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/ethereum/go-ethereum/consensus"
 	"github.com/xujingshi/go-evm/common"
 	"github.com/xujingshi/go-evm/common/hexutil"
 	"github.com/xujingshi/go-evm/common/types"
@@ -85,10 +84,6 @@ func (cc ChainContext) GetHeader(hash common.Hash, number uint64) *types.Header 
 		//MixDigest:  testHash,
 		//Nonce:      types.EncodeNonce(1),
 	}
-}
-
-func (cc ChainContext) Engine() consensus.Engine {
-	return nil
 }
 
 // func TestEVM(t *testing.T) {
