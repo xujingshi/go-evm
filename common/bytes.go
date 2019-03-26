@@ -40,30 +40,30 @@ import "encoding/hex"
 // 	return r
 // }
 
-// // FromHex returns the bytes represented by the hexadecimal string s.
-// // s may be prefixed with "0x".
-// func FromHex(s string) []byte {
-// 	if len(s) > 1 {
-// 		if s[0:2] == "0x" || s[0:2] == "0X" {
-// 			s = s[2:]
-// 		}
-// 	}
-// 	if len(s)%2 == 1 {
-// 		s = "0" + s
-// 	}
-// 	return Hex2Bytes(s)
-// }
+// FromHex returns the bytes represented by the hexadecimal string s.
+// s may be prefixed with "0x".
+func FromHex(s string) []byte {
+	if len(s) > 1 {
+		if s[0:2] == "0x" || s[0:2] == "0X" {
+			s = s[2:]
+		}
+	}
+	if len(s)%2 == 1 {
+		s = "0" + s
+	}
+	return Hex2Bytes(s)
+}
 
-// // CopyBytes returns an exact copy of the provided bytes.
-// func CopyBytes(b []byte) (copiedBytes []byte) {
-// 	if b == nil {
-// 		return nil
-// 	}
-// 	copiedBytes = make([]byte, len(b))
-// 	copy(copiedBytes, b)
+// CopyBytes returns an exact copy of the provided bytes.
+func CopyBytes(b []byte) (copiedBytes []byte) {
+	if b == nil {
+		return nil
+	}
+	copiedBytes = make([]byte, len(b))
+	copy(copiedBytes, b)
 
-// 	return
-// }
+	return
+}
 
 // // hasHexPrefix validates str begins with '0x' or '0X'.
 // func hasHexPrefix(str string) bool {

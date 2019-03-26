@@ -22,7 +22,7 @@ import (
 
 	"github.com/xujingshi/go-evm/common"
 	"github.com/xujingshi/go-evm/common/types"
-	"github.com/ethereum/go-ethereum/core/state"
+	"github.com/xujingshi/go-evm/state"
 )
 
 type dummyContractRef struct {
@@ -43,7 +43,7 @@ func (d *dummyContractRef) SetNonce(uint64)            {}
 func (d *dummyContractRef) Balance() *big.Int          { return new(big.Int) }
 
 type dummyStatedb struct {
-	state.StateDB
+	state.Mockdb
 }
 
 func (*dummyStatedb) GetRefund() uint64 { return 1337 }

@@ -31,8 +31,8 @@ encoding may be of uneven length. The number zero encodes as "0x0".
 package hexutil
 
 import (
-	"strconv"
 	"encoding/hex"
+	"strconv"
 )
 
 // const uintBits = 32 << (uint64(^uint(0)) >> 63)
@@ -44,11 +44,14 @@ var (
 	ErrMissingPrefix = &decError{"hex string without 0x prefix"}
 	ErrOddLength     = &decError{"hex string of odd length"}
 	ErrEmptyNumber   = &decError{"hex string \"0x\""}
-// 	ErrLeadingZero   = &decError{"hex number with leading zero digits"}
-	ErrUint64Range   = &decError{"hex number > 64 bits"}
+	// 	ErrLeadingZero   = &decError{"hex number with leading zero digits"}
+	ErrUint64Range = &decError{"hex number > 64 bits"}
+
 // 	ErrUintRange     = &decError{fmt.Sprintf("hex number > %d bits", uintBits)}
 // 	ErrBig256Range   = &decError{"hex number > 256 bits"}
 )
+
+type Bytes []byte
 
 type decError struct{ msg string }
 

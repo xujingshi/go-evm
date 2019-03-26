@@ -22,8 +22,8 @@ import (
 	"testing"
 
 	"github.com/xujingshi/go-evm/common"
-	"github.com/xujingshi/go-evm/crypto"
 	"github.com/xujingshi/go-evm/common/types"
+	"github.com/xujingshi/go-evm/crypto"
 )
 
 type twoOperandTest struct {
@@ -75,7 +75,7 @@ func testTwoOperandOp(t *testing.T, tests []twoOperandTest, opFn func(pc *uint64
 
 func TestByteOp(t *testing.T) {
 	var (
-		env            = NewEVM(Context{}, nil, params.TestChainConfig, Config{})
+		env            = NewEVM(Context{}, nil, types.TestChainConfig, Config{})
 		stack          = newstack()
 		evmInterpreter = NewEVMInterpreter(env, env.vmConfig)
 	)
@@ -210,7 +210,7 @@ func TestSLT(t *testing.T) {
 
 func opBenchmark(bench *testing.B, op func(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory *Memory, stack *Stack) ([]byte, error), args ...string) {
 	var (
-		env            = NewEVM(Context{}, nil, params.TestChainConfig, Config{})
+		env            = NewEVM(Context{}, nil, types.TestChainConfig, Config{})
 		stack          = newstack()
 		evmInterpreter = NewEVMInterpreter(env, env.vmConfig)
 	)
@@ -445,7 +445,7 @@ func BenchmarkOpIsZero(b *testing.B) {
 
 func TestOpMstore(t *testing.T) {
 	var (
-		env            = NewEVM(Context{}, nil, params.TestChainConfig, Config{})
+		env            = NewEVM(Context{}, nil, types.TestChainConfig, Config{})
 		stack          = newstack()
 		mem            = NewMemory()
 		evmInterpreter = NewEVMInterpreter(env, env.vmConfig)
@@ -471,7 +471,7 @@ func TestOpMstore(t *testing.T) {
 
 func BenchmarkOpMstore(bench *testing.B) {
 	var (
-		env            = NewEVM(Context{}, nil, params.TestChainConfig, Config{})
+		env            = NewEVM(Context{}, nil, types.TestChainConfig, Config{})
 		stack          = newstack()
 		mem            = NewMemory()
 		evmInterpreter = NewEVMInterpreter(env, env.vmConfig)
@@ -494,7 +494,7 @@ func BenchmarkOpMstore(bench *testing.B) {
 
 func BenchmarkOpSHA3(bench *testing.B) {
 	var (
-		env            = NewEVM(Context{}, nil, params.TestChainConfig, Config{})
+		env            = NewEVM(Context{}, nil, types.TestChainConfig, Config{})
 		stack          = newstack()
 		mem            = NewMemory()
 		evmInterpreter = NewEVMInterpreter(env, env.vmConfig)
@@ -577,7 +577,7 @@ func TestCreate2Addreses(t *testing.T) {
 			stack.push(big.NewInt(int64(len(code)))) //size
 			stack.push(big.NewInt(0)) // memstart
 			stack.push(big.NewInt(0)) // value
-			gas, _ := gasCreate2(params.GasTable{}, nil, nil, stack, nil, 0)
+			gas, _ := gasCreate2(types.GasTable{}, nil, nil, stack, nil, 0)
 			fmt.Printf("Example %d\n* address `0x%x`\n* salt `0x%x`\n* init_code `0x%x`\n* gas (assuming no mem expansion): `%v`\n* result: `%s`\n\n", i,origin, salt, code, gas, address.String())
 		*/
 		expected := common.BytesToAddress(common.FromHex(tt.expected))
