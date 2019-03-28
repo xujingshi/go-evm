@@ -50,9 +50,17 @@ func Keccak256Hash(data ...[]byte) (h common.Hash) {
 }
 
 // CreateAddress creates an ethereum address given the bytes and the nonce
+//
+//  e.g.
+//	b: [0,0,0,0,0,0,0,0,0,0,120,117,106,105,110,103,115,104,105]
+//	nonce: 0
+//
+//	data: [214,148,0,0,0,0,0,0,0,0,0,0,120,117,106,105,110,103,115,104,105,128]
+//		  0xd6(0xc0 + 22 data len) 0x94(0x80 + 20 b len) + b + 0x80(means 0)
+//
 func CreateAddress(b common.Address, nonce uint64) common.Address {
-	data, _ := rlp.EncodeToBytes([]interface{}{b, nonce})
-	return common.BytesToAddress(Keccak256(data)[12:])
+	data, _ := rlp.EncodeToBytes([]interface{}{b, nonce}) // rlp encode
+	return common.BytesToAddress(Keccak256(data)[12:])	// hash by Keccak256
 }
 
 // CreateAddress2 creates an ethereum address given the address bytes, initial

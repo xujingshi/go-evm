@@ -22,12 +22,12 @@ import (
 	"github.com/xujingshi/go-evm/common"
 )
 
-// Message is a fully derived transaction and implements core.Message
+// Message is a fully derived transaction 
 //
 // NOTE: In a future PR this will be removed.
 type Message struct {
-	to         *common.Address
 	from       common.Address
+	to         *common.Address
 	nonce      uint64
 	amount     *big.Int
 	gasLimit   uint64

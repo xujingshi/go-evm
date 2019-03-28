@@ -52,6 +52,7 @@ func run(evm *EVM, contract *Contract, input []byte, readOnly bool) ([]byte, err
 		}
 	}
 	for _, interpreter := range evm.interpreters {
+		// CanRun always return true, so we could always run evm.interpreters[0]
 		if interpreter.CanRun(contract.Code) {
 			if evm.interpreter != interpreter {
 				// Ensure that the interpreter pointer is set back
@@ -365,9 +366,7 @@ type codeAndHash struct {
 
 func (c *codeAndHash) Hash() common.Hash {
 	if c.hash == (common.Hash{}) {
-		// FIXME:
-		// c.hash = crypto.Keccak256Hash(c.code)
-		c.hash = common.Hash(crypto.Keccak256Hash(c.code))
+		c.hash = crypto.Keccak256Hash(c.code)
 	}
 	return c.hash
 }
@@ -382,14 +381,12 @@ func (evm *EVM) create(caller ContractRef, codeAndHash *codeAndHash, gas uint64,
 	if !evm.CanTransfer(evm.StateDB, caller.Address(), value) {
 		return nil, common.Address{}, gas, ErrInsufficientBalance
 	}
-	nonce := evm.StateDB.GetNonce(caller.Address())
+	nonce := evm.StateDB.GetNonce(caller.Address()) // FIXME: nonce到底是干啥用的
 	evm.StateDB.SetNonce(caller.Address(), nonce+1)
 
 	// Ensure there's no existing contract already at the designated address
 	contractHash := evm.StateDB.GetCodeHash(address)
-	// FIXME:
-	//if evm.StateDB.GetNonce(address) != 0 || (contractHash != (common.Hash{}) && contractHash != emptyCodeHash) {
-	if evm.StateDB.GetNonce(address) != 0 || (contractHash != (common.Hash{}) && contractHash != common.Hash(emptyCodeHash)) {
+	if evm.StateDB.GetNonce(address) != 0 || (contractHash != (common.Hash{}) && contractHash != emptyCodeHash) {
 		return nil, common.Address{}, 0, ErrContractAddressCollision
 	}
 	// Create a new account on the state
@@ -398,6 +395,7 @@ func (evm *EVM) create(caller ContractRef, codeAndHash *codeAndHash, gas uint64,
 	if evm.ChainConfig().IsEIP158(evm.BlockNumber) {
 		evm.StateDB.SetNonce(address, 1)
 	}
+	// modify account state in stateDB
 	evm.Transfer(evm.StateDB, caller.Address(), address, value)
 
 	// initialise a new contract and set the code that is to be used by the

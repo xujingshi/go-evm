@@ -13,6 +13,7 @@ func NewMockdb() *Mockdb {
 		contracts: make(map[common.Address][]uint8, 100),
 		nonces:    make(map[common.Address]uint64, 100),
 		states:    make(map[common.Hash]common.Hash, 100),
+		accounts:  make(map[common.Address]uint64, 100),
 	}
 }
 
@@ -20,18 +21,24 @@ type Mockdb struct {
 	contracts map[common.Address][]uint8
 	nonces    map[common.Address]uint64
 	states    map[common.Hash]common.Hash
+	accounts  map[common.Address]uint64
 }
 
 func (self *Mockdb) CreateAccount(address common.Address) {
+	self.accounts[address] = 0
 }
 
-func (c *Mockdb) SubBalance(address common.Address, amount *big.Int) {
+func (self *Mockdb) SubBalance(address common.Address, amount *big.Int) {
+	//FIXME: too simple logic
+	self.accounts[address] -= amount.Uint64()
 }
 
-func (c *Mockdb) AddBalance(address common.Address, amount *big.Int) {
+func (self *Mockdb) AddBalance(address common.Address, amount *big.Int) {
+	//FIXME: too simple logic
+	self.accounts[address] += amount.Uint64()
 }
 
-func (c *Mockdb) GetBalance(address common.Address) *big.Int {
+func (self *Mockdb) GetBalance(address common.Address) *big.Int {
 	return big.NewInt(math.MaxUint32)
 }
 
