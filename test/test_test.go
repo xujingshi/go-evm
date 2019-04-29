@@ -51,6 +51,48 @@ func loadAbi(filename string) abi.ABI {
 	return abiObj
 }
 
+func getVariables(statedb *state.StateDB, hash common.Address) {
+	cb := func(key, value common.Hash) bool {
+		fmt.Printf("key=%x,value=%x\n", key, value)
+		return true
+	}
+
+	statedb.ForEachStorage(hash, cb)
+
+}
+
+func Print(outputs []byte, name string) {
+	fmt.Printf("method=%s, output=%x\n", name, outputs)
+}
+
+type ChainContext struct{}
+
+// get block header
+func (cc ChainContext) GetHeader(hash common.Hash, number uint64) *types.Header {
+
+	return &types.Header{
+		// ParentHash: common.Hash{},
+		// UncleHash:  common.Hash{},
+		Coinbase: fromAddress,
+		//	Root:        common.Hash{},
+		//	TxHash:      common.Hash{},
+		//	ReceiptHash: common.Hash{},
+		//	Bloom:      types.BytesToBloom([]byte("xujingshi")),
+		Difficulty: big.NewInt(1),
+		Number:     big.NewInt(1).SetUint64(number),
+		GasLimit:   1000000,
+		GasUsed:    0,
+		Time:       big.NewInt(time.Now().Unix()),
+		Extra:      nil,
+		//MixDigest:  testHash,
+		//Nonce:      types.EncodeNonce(1),
+	}
+}
+
+func (cc ChainContext) Engine() consensus.Engine {
+	return nil
+}
+
 func TestEVM(t *testing.T) {
 	abiFileName := "./coin_sol_Coin.abi"
 	binFileName := "./coin_sol_Coin.bin"
@@ -155,15 +197,15 @@ func TestEVM(t *testing.T) {
 	fmt.Println("after get sender balance, testBalance =", gasLeftover)
 
 	// get event
-	logs := statedb.Logs()
+	// logs := statedb.Logs()
 
-	for _, log := range logs {
-		fmt.Printf("%#v\n", log)
-		for _, topic := range log.Topics {
-			fmt.Printf("topic: %#v\n", topic)
-		}
-		fmt.Printf("data: %#v\n", log.Data)
-	}
+	// for _, log := range logs {
+	// 	fmt.Printf("%#v\n", log)
+	// 	for _, topic := range log.Topics {
+	// 		fmt.Printf("topic: %#v\n", topic)
+	// 	}
+	// 	fmt.Printf("data: %#v\n", log.Data)
+	// }
 
 	root, err = statedb.Commit(true)
 	must(err)
@@ -185,46 +227,4 @@ func TestEVM(t *testing.T) {
 		os.Exit(-1)
 	}
 	getVariables(statedb2, contractAddr)
-}
-
-func getVariables(statedb *state.StateDB, hash common.Address) {
-	cb := func(key, value common.Hash) bool {
-		fmt.Printf("key=%x,value=%x\n", key, value)
-		return true
-	}
-
-	statedb.ForEachStorage(hash, cb)
-
-}
-
-func Print(outputs []byte, name string) {
-	fmt.Printf("method=%s, output=%x\n", name, outputs)
-}
-
-type ChainContext struct{}
-
-// get block header
-func (cc ChainContext) GetHeader(hash common.Hash, number uint64) *types.Header {
-
-	return &types.Header{
-		// ParentHash: common.Hash{},
-		// UncleHash:  common.Hash{},
-		Coinbase: fromAddress,
-		//	Root:        common.Hash{},
-		//	TxHash:      common.Hash{},
-		//	ReceiptHash: common.Hash{},
-		//	Bloom:      types.BytesToBloom([]byte("xujingshi")),
-		Difficulty: big.NewInt(1),
-		Number:     big.NewInt(1).SetUint64(number),
-		GasLimit:   1000000,
-		GasUsed:    0,
-		Time:       big.NewInt(time.Now().Unix()),
-		Extra:      nil,
-		//MixDigest:  testHash,
-		//Nonce:      types.EncodeNonce(1),
-	}
-}
-
-func (cc ChainContext) Engine() consensus.Engine {
-	return nil
 }
