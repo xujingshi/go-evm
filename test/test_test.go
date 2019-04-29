@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"math/big"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -36,7 +37,7 @@ func must(err error) {
 func loadBin(filename string) []byte {
 	code, err := ioutil.ReadFile(filename)
 	must(err)
-	return hexutil.MustDecode("0x" + string(code))
+	return hexutil.MustDecode("0x" + strings.TrimSpace(string(code)))
 	//return []byte("0x" + string(code))
 }
 func loadAbi(filename string) abi.ABI {
@@ -84,6 +85,62 @@ func (cc ChainContext) GetHeader(hash common.Hash, number uint64) *types.Header 
 		//MixDigest:  testHash,
 		//Nonce:      types.EncodeNonce(1),
 	}
+}
+
+func TestPayable(t *testing.T) {
+	// abiFileName := "./payable_sol_Payable.abi"
+	// binFileName := "./payable_sol_Payable.bin"
+
+	abiFileName := "./payable_sol_Payable.1.abi"
+	binFileName := "./payable_sol_Payable.1.bin"
+	// 从bin读出bytecode，前缀加0x，hex decode成十进制 []uint8
+	data := loadBin(binFileName)
+
+	// init db
+	msg := core.NewMessage(fromAddress, &toAddress, nonce, amount, gasLimit, big.NewInt(0), data, false)
+	cc := ChainContext{}
+	ctx := core.NewEVMContext(msg, cc.GetHeader(testHash, 7280001), cc, &fromAddress)
+	dataPath := "/Users/mac/development/src/github.com/xujingshi/go-evm/test/data"
+	os.Remove(dataPath)
+
+	balance := uint64(big.NewInt(1e18).Uint64())
+	fmt.Println("init balance =", balance)
+
+	// log config
+	config := types.MainnetChainConfig
+	logConfig := vm.LogConfig{}
+	// common.Address => Storage
+	structLogger := vm.NewStructLogger(&logConfig)
+	vmConfig := vm.Config{Debug: true, Tracer: structLogger /*, JumpTable: vm.NewByzantiumInstructionSet()*/}
+
+	// load evm
+	evm := vm.NewEVM(ctx, state.NewMockdb(), config, vmConfig)
+	// caller
+	contractRef := vm.AccountRef(fromAddress)
+	// all balance used to create contract as contract.gas
+	contractCode, contractAddr, balance, vmerr := evm.Create(contractRef, data, balance, big.NewInt(0))
+	must(vmerr)
+	//fmt.Printf("getcode:%x\n%x\n", contractCode, statedb.GetCode(contractAddr))
+	fmt.Println("contractCode length = ", len(contractCode))
+
+	fmt.Println("after create contract, balance =", balance)
+
+	evm.StateDB.AddBalance(fromAddress, big.NewInt(1e18))
+	evm.StateDB.AddBalance(contractAddr, big.NewInt(1e18))
+
+	abiObj := loadAbi(abiFileName)
+
+	// method_id(4B) + args0(32B) + args1(32B) + ...
+	input, err := abiObj.Pack("Send")
+	must(err)
+	// 调用minter()获取矿工地址
+	outputs, balance, vmerr := evm.Call(contractRef, contractAddr, input, balance, big.NewInt(1))
+	must(vmerr)
+
+	fmt.Printf("output = %x\n", outputs)
+
+	fmt.Printf("sender balance = %d\n", evm.StateDB.GetBalance(fromAddress).Int64())
+	fmt.Printf("contract balance = %d\n", evm.StateDB.GetBalance(contractAddr).Int64())
 }
 
 func TestEVMWithoutStorage(t *testing.T) {
@@ -181,6 +238,114 @@ func TestEVMWithoutStorage(t *testing.T) {
 	for _, log := range structLogger.StructLogs() {
 		fmt.Println(log)
 	}
+}
+
+func TestMsg(t *testing.T) {
+
+	dataA := loadBin("./msg_sol_Msg.bin")
+	dataB := loadBin("./msg_sol_Msg_2.bin")
+
+	// init db
+	msg := core.NewMessage(fromAddress, &toAddress, nonce, amount, gasLimit, big.NewInt(0), dataA, false)
+	cc := ChainContext{}
+	ctxA := core.NewEVMContext(msg, cc.GetHeader(testHash, 7280001), cc, &fromAddress)
+
+	msg = core.NewMessage(fromAddress, &toAddress, nonce, amount, gasLimit, big.NewInt(0), dataB, false)
+	ctxB := core.NewEVMContext(msg, cc.GetHeader(testHash, 7280001), cc, &fromAddress)
+	dataPath := "/Users/mac/development/src/github.com/xujingshi/go-evm/test/data"
+	os.Remove(dataPath)
+
+	balance := uint64(big.NewInt(1e18).Uint64())
+	fmt.Println("init balance =", balance)
+
+	// log config
+	config := types.MainnetChainConfig
+	logConfig := vm.LogConfig{}
+	// common.Address => Storage
+	structLogger := vm.NewStructLogger(&logConfig)
+	vmConfig := vm.Config{Debug: true, Tracer: structLogger /*, JumpTable: vm.NewByzantiumInstructionSet()*/}
+
+	// load evm
+	evmA := vm.NewEVM(ctxA, state.NewMockdb(), config, vmConfig)
+	evmB := vm.NewEVM(ctxB, state.NewMockdb(), config, vmConfig)
+
+	// caller
+	contractRef := vm.AccountRef(fromAddress)
+	contractCodeA, contractAddrA, balance, vmerr := evmA.Create(contractRef, dataA, balance, big.NewInt(0))
+	must(vmerr)
+	fmt.Println("contractCode length = ", len(contractCodeA))
+	fmt.Println("after create contract, balance =", balance)
+	contractCodeB, contractAddrB, balance, vmerr := evmA.Create(contractRef, dataB, balance, big.NewInt(0))
+	must(vmerr)
+	fmt.Println("contractCode length = ", len(contractCodeB))
+	fmt.Println("after create contract, balance =", balance)
+
+	abiObjA := loadAbi("./msg_sol_Msg.abi")
+	abiObjB := loadAbi("./msg_sol_Msg_2.abi")
+
+	// method_id(4B) + args0(32B) + args1(32B) + ...
+	input, err := abiObjA.Pack("x")
+	must(err)
+	// 调用x()获取x
+	outputs, balance, vmerr := evmA.Call(contractRef, contractAddrA, input, balance, big.NewInt(0))
+	must(vmerr)
+	fmt.Println(outputs, balance, vmerr)
+
+	input, err = abiObjB.Pack("x")
+	must(err)
+	// 调用x()获取x
+	outputs, balance, vmerr = evmB.Call(contractRef, contractAddrB, input, balance, big.NewInt(0))
+	must(vmerr)
+	fmt.Println(outputs, balance, vmerr)
+
+	// sender := common.BytesToAddress(outputs)
+
+	// if !bytes.Equal(sender.Bytes(), fromAddress.Bytes()) {
+	// 	fmt.Println("caller are not equal to minter!!")
+	// 	os.Exit(-1)
+	// }
+
+	// senderAcc := vm.AccountRef(sender)
+
+	// // mint
+	// input, err = abiObj.Pack("mint", sender, big.NewInt(1000000))
+	// must(err)
+	// outputs, balance, vmerr = evm.Call(senderAcc, contractAddr, input, balance, big.NewInt(0))
+	// must(vmerr)
+	// fmt.Println("after mint, balance =", balance)
+
+	// //send
+	// input, err = abiObj.Pack("send", toAddress, big.NewInt(11))
+	// outputs, balance, vmerr = evm.Call(senderAcc, contractAddr, input, balance, big.NewInt(0))
+	// must(vmerr)
+	// fmt.Println("after send 11, balance =", balance)
+
+	// //send
+	// input, err = abiObj.Pack("send", toAddress, big.NewInt(19))
+	// must(err)
+	// outputs, balance, vmerr = evm.Call(senderAcc, contractAddr, input, balance, big.NewInt(0))
+	// must(vmerr)
+	// fmt.Println("after send 19, balance =", balance)
+
+	// // get receiver balance
+	// input, err = abiObj.Pack("balances", toAddress)
+	// must(err)
+	// outputs, balance, vmerr = evm.Call(contractRef, contractAddr, input, balance, big.NewInt(0))
+	// must(vmerr)
+	// Print(outputs, "balances")
+	// fmt.Println("after get receiver balance, balance =", balance)
+
+	// // get sender balance
+	// input, err = abiObj.Pack("balances", sender)
+	// must(err)
+	// outputs, balance, vmerr = evm.Call(contractRef, contractAddr, input, balance, big.NewInt(0))
+	// must(vmerr)
+	// Print(outputs, "balances")
+	// fmt.Println("after get sender balance, balance =", balance)
+
+	// for _, log := range structLogger.StructLogs() {
+	// 	fmt.Println(log)
+	// }
 }
 
 // func TestEVM(t *testing.T) {

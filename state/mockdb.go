@@ -1,7 +1,6 @@
 package state
 
 import (
-	"math"
 	"math/big"
 
 	"github.com/xujingshi/go-evm/common"
@@ -39,7 +38,11 @@ func (self *Mockdb) AddBalance(address common.Address, amount *big.Int) {
 }
 
 func (self *Mockdb) GetBalance(address common.Address) *big.Int {
-	return big.NewInt(math.MaxUint32)
+	balance, ok := self.accounts[address]
+	if ok {
+		return big.NewInt(int64(balance))
+	}
+	return big.NewInt(0)
 }
 
 func (self *Mockdb) GetNonce(address common.Address) uint64 {

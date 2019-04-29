@@ -1,0 +1,17 @@
+[
+	{
+		"constant": false,
+		"inputs": [],
+		"name": "Send",
+		"outputs": [],
+		"payable": true,
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	}
+]
